@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { Pool, Client } = require("pg");
+const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
 app.set("port", 3000);
@@ -13,20 +13,25 @@ app.listen(app.get("port"), () => {
   console.log("listening 3000");
 });
 
-const client = new Client({
-  user: process.env.USER,
-  password: process.env.PASSWORD,
-  host: process.env.HOST,
-  port: process.env.PORT,
-  database: process.env.DATABASE,
+// !Connecting to a database
+
+const database = process.env.DATABASE;
+const username = process.env.USER;
+const password = process.env.PASSWORD;
+
+// Option 2: Passing parameters separately (other dialects)
+const sequelize = new Sequelize(database, username, password, {
+  host: "localhost",
+  dialect: "postgres",
 });
 
-function GetUserList() {
-  client.connect();
-  client.query("SELECT * FROM users", (err, res) => {
-    console.log(res);
-    client.end();
-  });
-}
+const isConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Connection has been established successfully.");
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  }
+};
 
-module.exports = { getUserList: GetUserList };
+isConnection();
